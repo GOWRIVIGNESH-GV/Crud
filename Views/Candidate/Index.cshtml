@@ -1,0 +1,133 @@
+﻿@model List<CandidateModel>
+@{
+    ViewData["Title"] = "Candidate List";
+}
+<div class="container-fluid col-lg-12 p-3 shadow-lg">
+
+    <div class="d-flex align-items-center pt-3">
+        @* <a type="button" class="btn btn-sm btn-floating" id="btn-back" onclick="window.history.back()">
+            <i class="bi bi-arrow-left-circle fs-3"></i>
+        </a> *@
+
+        <span id="title" class="ms-4 mt-0 fs-5"> @ViewData["Title"]</span>
+    </div>
+
+    <a asp-controller="Candidate" asp-action="Registration" class="btn btn-primary mb-3">Add Candidate</a>
+
+    <table id="candidate-table" class="table table-striped table-bordered">
+        <thead>
+            <tr>
+                <th>Candidate Name</th>
+                <th>Gender</th>
+                <th>Skills</th>
+                <th>Phone</th>
+                <th>Email</th>
+                <th>Address</th>
+                <th>Country</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var candidate in Model)
+            {
+                <tr>
+                    <td>@candidate.CountryName</td>
+                    <td>@candidate.Gender</td>
+                    <td>@candidate.Skills</td>
+                    <td>@candidate.Phone</td>
+                    <td>@candidate.Email</td>
+                    <td>@candidate.Address</td>
+                    <td>@candidate.CountryName</td>
+
+                    <td>
+                        <a href="javascript:void(0);" id="edit-btn" data-id="@candidate.CandidateId"
+                            class="btn btn-warning btn-sm edit-btn">Edit</a>
+                        <a href="javascript:void(0);" id="delete-btn" data-id="@candidate.CandidateId"
+                            class="btn btn-danger btn-sm delete-btn">Delete</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@if (ViewBag.ErrorMessage != null)
+
+{
+    <div class="alert alert-danger mt-3">
+        @ViewBag.ErrorMessage
+    </div>
+
+}
+
+@if (ViewBag.Message != null)
+{
+    <div class="alert alert-success mt-3">
+        @ViewBag.Message
+    </div>
+}
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+
+            $('#userTable').DataTable({
+                paging: true,
+                searching: true,
+                ordering: true,
+                pageLength: 10,
+                lengthMenu: [5, 10, 25, 50, 100],
+                language: {
+                    search: "Filter records:",
+                    lengthMenu: "Show _MENU_ entries",
+                },
+                columnDefs: [
+                    { orderable: false, targets: 3 }
+                ]
+            });
+
+
+            $('.edit-btn').on('click', function () {
+                console.log("Test Edit");
+
+                var candidateId = $(this).data('id');
+
+                Swal.fire({
+                    title: 'Are you sure you want to edit this Candidate?',
+                    text: 'You can modify the candidate details.',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, Edit it!',
+                    cancelButtonText: 'No, Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = '/Edit/' + candidateId; // Redirect to the Edit page
+                    }
+                });
+            });
+
+            // Delete button click event
+            $('.delete-btn').on('click', function () {
+                var candidateId = $(this).data('id');
+
+                Swal.fire({
+                    title: 'Are you sure you want to delete this Candidate?',
+                    text: 'This action is irreversible!',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Yes, Delete it!',
+                    cancelButtonText: 'No, Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+
+                        window.location.href = '/Delete/' + candidateId;
+                    }
+                });
+            });
+        }); 
+    </script>
+
+}

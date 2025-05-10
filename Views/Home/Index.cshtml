@@ -1,29 +1,133 @@
-﻿@model CandidateModel;
+﻿@model List<CandidateModel>
 @{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Candidate List";
 }
+<div class="container-fluid col-lg-12 p-3 shadow-lg">
 
-
-<div class="container-fluid col-lg-12 p-3 shadow-lg" id="box-container">
     <div class="d-flex align-items-center pt-3">
-        <a type="button" class="btn btn-sm btn-floating" id="btn-back" onclick="window.history.back()">
+        @* <a type="button" class="btn btn-sm btn-floating" id="btn-back" onclick="window.history.back()">
             <i class="bi bi-arrow-left-circle fs-3"></i>
-        </a>
+        </a> *@
 
-        <span id="title" class="ms-4 mt-0 fs-5 mb-5"> Candidate Registration</span>
+        <span id="title" class="ms-4 mt-0 fs-5"> @ViewData["Title"]</span>
     </div>
 
-    <div id="register-container" class="register-container ps-4 ">
+    <a asp-controller="Candidate" asp-action="Registration" class="btn btn-primary mb-3">Add Candidate</a>
 
-    </div>
+    <table id="candidate-table" class="table table-striped table-bordered">
+        <thead>
+            <tr>
+                <th>Candidate Name</th>
+                <th>Gender</th>
+                <th>Skills</th>
+                <th>Phone</th>
+                <th>Email</th>
+                <th>Address</th>
+                <th>Country</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var candidate in Model)
+            {
+                <tr>
+                    <td>@candidate.CountryName</td>
+                    <td>@candidate.Gender</td>
+                    <td>@candidate.Skills</td>
+                    <td>@candidate.Phone</td>
+                    <td>@candidate.Email</td>
+                    <td>@candidate.Address</td>
+                    <td>@candidate.CountryName</td>
 
-    <button type="" id="btn-add" class="btn btn-primary">Add</button>
-    <button type="" id="btn-save" class="btn btn-success">Submit</button>
-    <input type="hidden" id="form-index" name="FormIndex" value="0" data-index="0" />
-
+                    <td>
+                        <a href="javascript:void(0);" id="edit-btn" data-id="@candidate.CandidateId"
+                            class="btn btn-warning btn-sm edit-btn">Edit</a>
+                        <a href="javascript:void(0);" id="delete-btn" data-id="@candidate.CandidateId"
+                            class="btn btn-danger btn-sm delete-btn">Delete</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
 </div>
 
-@section Scripts
+@if (ViewBag.ErrorMessage != null)
+
 {
-    <script src="~/js/candidate.js" asp-append-version="true"></script>
+    <div class="alert alert-danger mt-3">
+        @ViewBag.ErrorMessage
+    </div>
+
+}
+
+@if (ViewBag.Message != null)
+{
+    <div class="alert alert-success mt-3">
+        @ViewBag.Message
+    </div>
+}
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+
+            $('#userTable').DataTable({
+                paging: true,        // Enable pagination
+                searching: true,     // Enable search/filter
+                ordering: true,      // Enable column sorting
+                pageLength: 10,      // Default rows per page
+                lengthMenu: [5, 10, 25, 50, 100], // Options for rows per page
+                language: {
+                    search: "Filter records:",  // Customize search label
+                    lengthMenu: "Show _MENU_ entries",
+                },
+                columnDefs: [
+                    { orderable: false, targets: 3 } // Disable sorting for the 'Actions' column
+                ]
+            });
+
+            // Edit button click event
+            $('.edit-btn').on('click', function () {
+                console.log("Test Edit");
+
+                var candidateId = $(this).data('id');
+
+                Swal.fire({
+                    title: 'Are you sure you want to edit this candidate?',
+                    text: 'You can modify the candidate details.',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, Edit it!',
+                    cancelButtonText: 'No, Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = '/Candidate/Edit/' + candidateId; // Redirect to the Edit page
+                    }
+                });
+            });
+
+            // Delete button click event
+            $('.delete-btn').on('click', function () {
+                var candidateId = $(this).data('id');
+
+                Swal.fire({
+                    title: 'Are you sure you want to delete this candidate?',
+                    text: 'This action is irreversible!',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Yes, Delete it!',
+                    cancelButtonText: 'No, Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Call Delete API or perform the delete action
+                        window.location.href = '/Candidate/Delete/' + candidateId; // Redirect to the Delete action
+                    }
+                });
+            });
+        }); 
+    </script>
+
 }

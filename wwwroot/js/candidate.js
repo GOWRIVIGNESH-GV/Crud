@@ -101,7 +101,7 @@ const addForm = () => {
     console.log('Current index:', formIndex);
 
     $.ajax({
-        url: '/Home/GetRegisterForm',
+        url: '/GetRegistrationForm',
         type: 'GET',
         data: { index: formIndex },
         success: function (html) {
@@ -188,30 +188,25 @@ $(document).ready(() => {
         console.log('save end');
 
 
-        // $.ajax({
-        //     type: "GET",
-        //     url: "/GetHalls",
-        //     success: (response) => {
-        //         response.issuccess ? loadHalls(response.data) :
-        //             Swal.fire({
-        //                 title: "Error!",
-        //                 text: response.message,
-        //                 icon: "error",
-        //                 confirmButtonColor: "#d33",
-        //                 confirmButtonText: "OK"
-        //             });
-        //     },
-        //     error: (err) => {
-        //         Swal.fire({
-        //             title: "Error!",
-        //             text: error.responseText,
-        //             icon: "error",
-        //             confirmButtonColor: "#d33",
-        //             confirmButtonText: "OK"
-        //         });
-        //     }
+        $.ajax({
+            type: "POST",
+            url: "/Candidate/SaveCandidates",
+            contentType: 'application/json',
+            data: JSON.stringify(candidates),
+            success: (response) => {
 
-        // });
+            },
+            error: (err) => {
+                Swal.fire({
+                    title: "Error!",
+                    text: error.responseText,
+                    icon: "error",
+                    confirmButtonColor: "#d33",
+                    confirmButtonText: "OK"
+                });
+            }
+
+        });
 
     });
 });

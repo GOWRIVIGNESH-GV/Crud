@@ -2,66 +2,39 @@ using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Crud.Models;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Crud.Services;
+using System.Threading.Tasks;
 
 namespace Crud.Controllers;
 
 public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;
+    private readonly ICandidateService _candidateService;
 
-    public HomeController(ILogger<HomeController> logger)
+    public HomeController(ILogger<HomeController> logger, ICandidateService candidateService)
     {
         _logger = logger;
+        _candidateService = candidateService;
     }
 
-    public IActionResult Index()
+    public async Task<IActionResult> Index()
     {
-        return View();
-    }
+        var candidates = new List<CandidateModel>();
+        var res = await _candidateService.GetAllAsync();
 
-    private List<SelectListItem> GetCountryList()
-    {
-        var countries = new List<SelectListItem>
+        if (res.IsSuccess && res.Value != null)
         {
-            new SelectListItem()
-            {
-                Value = "1",
-                Text = "India"
-            },
-             new SelectListItem()
-            {
-                Value = "2",
-                Text = "Russia"
-            },
-             new SelectListItem()
-            {
-                Value = "3",
-                Text = "America"
-            }
-        };
-        return countries;
-    }
-    private List<string> GetSkillList()
-    {
-        var skills = new List<string>
-        {
-"C","C++","Java","C#","React"
-        };
-        return skills;
-    }
-    public IActionResult GetRegisterForm(int index)
-    {
-        var model = new CandidateModel();
+            candidates = res.Value;
+        }
 
-        ViewBag.skillList = GetSkillList();
-        ViewBag.CountryList = GetCountryList();
-        ViewData["FormIndex"] = index;
-        return PartialView("_RegisterFormPartial", model);
+        return View(candidates);
     }
 
 
     public IActionResult Privacy()
     {
+
         return View();
     }
 
