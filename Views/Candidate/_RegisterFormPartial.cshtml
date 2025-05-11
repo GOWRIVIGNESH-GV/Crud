@@ -1,7 +1,12 @@
 @model CandidateModel;
 @{
-    var skillSetList = ViewBag.skillList as List<string>;
+    @* var skillSetList = ViewBag.skillList as List<string>;
     var countryList = ViewBag.countryList as List<SelectListItem>;
+    var selectedSkills = Model.Skills ?? new List<string>();
+    var index = ViewData["FormIndex"] ?? 0; *@
+
+    var skillSetList = ViewData["skillList"] as List<string>;
+    var countryList = ViewData["countryList"] as List<SelectListItem>;
     var selectedSkills = Model.Skills ?? new List<string>();
     var index = ViewData["FormIndex"] ?? 0;
 }
@@ -17,9 +22,9 @@
 
     <div class="input-control mb-3">
         <label>Gender <span class="text-danger">*</span></label><br />
-        <input type="radio" name="Gender_@index" value="1" /> Male
-        <input type="radio" name="Gender_@index" value="2" /> Female
-        <input type="radio" name="Gender_@index" value="3" /> Other
+        <input type="radio" name="Gender_@index" value="1" @(Model.GenderId == 1 ? "checked" : "") /> Male
+        <input type="radio" name="Gender_@index" value="2" @(Model.GenderId == 2 ? "checked" : "") /> Female
+        <input type="radio" name="Gender_@index" value="3" @(Model.GenderId == 3 ? "checked" : "") /> Other
         <div class="error text-danger"></div>
     </div>
 

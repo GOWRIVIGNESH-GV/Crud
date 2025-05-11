@@ -21,6 +21,10 @@
       "PackagePath": "staticwebassets\\js\\candidate.js"
     },
     {
+      "Id": "D:\\Dotnet\\Crud\\wwwroot\\js\\candidateReg.js",
+      "PackagePath": "staticwebassets\\js\\candidateReg.js"
+    },
+    {
       "Id": "D:\\Dotnet\\Crud\\wwwroot\\js\\site.js",
       "PackagePath": "staticwebassets\\js\\site.js"
     },

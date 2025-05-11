@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "W3lvd/ZHub+lmLGE4mJZLlf0nmn/iZ5wK579oZgEBIs=",
+  "Hash": "EqguxrFzzP6t8Q/IU2S3n1Mz4r+Ib0/CZk9Nf6tTK5A=",
   "Source": "Crud",
   "BasePath": "_content/Crud",
   "Mode": "Default",
@@ -129,6 +129,25 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\js\\candidate.js"
+    },
+    {
+      "Identity": "D:\\Dotnet\\Crud\\wwwroot\\js\\candidateReg.js",
+      "SourceId": "Crud",
+      "SourceType": "Discovered",
+      "ContentRoot": "D:\\Dotnet\\Crud\\wwwroot\\",
+      "BasePath": "_content/Crud",
+      "RelativePath": "js/candidateReg.js",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\js\\candidateReg.js"
     },
     {
       "Identity": "D:\\Dotnet\\Crud\\wwwroot\\js\\site.js",

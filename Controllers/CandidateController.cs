@@ -25,6 +25,7 @@ namespace Crud.Controllers
             _candidateService = candidateService;
         }
 
+        [HttpGet("/Index")]
         public async Task<IActionResult> Index()
         {
             var candidates = new List<CandidateModel>();
@@ -35,7 +36,7 @@ namespace Crud.Controllers
                 candidates = res.Value;
             }
 
-            return View(candidates);
+            return View("Index", candidates);
         }
 
         [HttpGet("/Registration")]
@@ -96,94 +97,74 @@ namespace Crud.Controllers
         };
             return skills;
         }
+
         [HttpGet("/GetRegistrationForm")]
         public async Task<IActionResult> GetRegisterForm(int index)
         {
-            var model = new CandidateModel();
-
-            ViewBag.skillList = GetSkillList();
+            ViewData["skillList"] = GetSkillList();
 
             var countries = await GetCountryList();
-            ViewBag.CountryList = countries;
+            ViewData["countryList"] = countries;
+
             ViewData["FormIndex"] = index;
-            return PartialView("_RegisterFormPartial", model);
+
+            return PartialView("_RegisterFormPartial", new CandidateModel());
         }
 
         [HttpPost("SaveCandidates")]
-        public IActionResult SaveCandidates([FromBody] List<CandidateModel> candidates)
+        public async Task<IActionResult> SaveCandidatesAsync([FromBody] List<CandidateModel> candidates)
         {
             if (candidates == null || !candidates.Any())
             {
                 return Json(new { success = false, message = "No candidates received." });
             }
 
-            // TODO: Save candidates to the database (or any other processing)
-            foreach (var candidate in candidates)
+            var userId = 1;
+            var res = await _candidateService.InsertBulkAsync(candidates, userId);
+
+            if (res.IsFailed)
             {
-                // Log or process each candidate
-                Console.WriteLine($"Saving candidate: {candidate.Name}, Skills: {string.Join(",", candidate.Skills)}");
+                ViewBag.Message = $"An error occurred ! , {res.Errors.FirstOrDefault()?.Message}";
+                return Json(new { success = false, message = "An error occurred." });
             }
 
             return Json(new { success = true, message = "Candidates saved successfully." });
         }
-        [HttpPost("Edit/{id}")]
-        public async Task<IActionResult> Edit(CandidateModel candidate)
+
+
+        [HttpPost("/SaveCandidate")]
+        public async Task<IActionResult> Save([FromBody] CandidateModel entity)
         {
-            //     bool isServiceAvailable = _apiService.CheckApiHealth();
+            if (!ModelState.IsValid)
+            {
+                return View("Create", entity);
+            }
 
-            //     if (!isServiceAvailable)
-            //     {
-            //         return RedirectToAction("ServerUnavailableError", "Error");
-            //     }
-            //     if (!ModelState.IsValid)
-            //     {
-            //         user.UserActiveStatusList = GlobalAccess.GetActiveStatusList();
-            //         user.UserRoleList = GlobalAccess.GetUserRoleList();
-            //         return View("Create", user);
-            //     }
+            entity.CreatedBy = 1;
 
-            //     var userId = _userContextService.GetUserId();
-            //     user.ChangePassword = true;
-            //     if (string.IsNullOrEmpty(userId))
-            //     {
-            //         return Unauthorized();
-            //     }
+            var res = await _candidateService.InsertAsync(entity);
 
-            //     user.CreatedBy = Convert.ToInt32(userId);
+            if (res.IsFailed)
+            {
+                ViewBag.ErrorMessage = $"An error occurred ! , {res.Errors.FirstOrDefault()?.Message}";
+                return Json(new { success = false, message = "An error occurred." });
+            }
 
-            //     var token = _userContextService.GetJwtToken();
-
-            //     if (string.IsNullOrEmpty(token))
-            //     {
-            //         return Unauthorized();
-            //     }
-
-            //     var res = await _userService.InsertAsync(user, token);
-
-            //     if (res.IsFailed)
-            //     {
-            //         ViewBag.ErrorMessage = "An error occured while trying to edit user data";
-            //         user.UserActiveStatusList = GlobalAccess.GetActiveStatusList();
-            //         user.UserRoleList = GlobalAccess.GetUserRoleList();
-            //         return View("Create", user);
-            //     }
-
-            return RedirectToAction(nameof(Index));
-
+            return Json(new { success = true, message = "Candidates Updated successfully." });
         }
 
         [HttpGet("/Delete/{id}")]
-        public async Task<IActionResult> Delete(int candidateId)
+        public async Task<IActionResult> Delete(int id)
         {
 
-            if (candidateId < 1)
+            if (id < 1)
             {
                 ViewBag.ErrorMessage = "Invlaid Candidate Id.";
                 return RedirectToAction(nameof(Index));
             }
 
             var deletedBy = 1;
-            var res = await _candidateService.DeleteAsync(candidateId, deletedBy);
+            var res = await _candidateService.DeleteAsync(id, deletedBy);
 
             if (res.IsFailed)
             {
@@ -194,7 +175,35 @@ namespace Crud.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [HttpGet("/Candidate_Registration/{id}")]
+        public async Task<IActionResult> CandidateRegistrationAsync(int id)
+        {
+            var entity = new CandidateModel();
 
+            ViewData["skillList"] = GetSkillList();
+            var countries = await GetCountryList();
+            ViewData["countryList"] = countries;
+
+            if (id > 0)
+            {
+                var res = await _candidateService.GetAsync(id);
+
+                if (res.IsFailed)
+                {
+                    var error = res.Errors.FirstOrDefault()?.Message ?? "candidate not found !";
+                    ViewBag.ErrorMessage = error;
+                    return RedirectToAction(nameof(Index));
+                }
+
+                entity = res.Value;
+            }
+            else
+            {
+                entity.Skills = new List<string>();
+            }
+
+            return View("Create", entity);
+        }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()

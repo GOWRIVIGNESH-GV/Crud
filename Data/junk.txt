@@ -1,6 +1,5 @@
-﻿@model List<CandidateModel>
+@model List<CandidateModel>
 @{
-    Layout = "_Layout";
     ViewData["Title"] = "Candidate List";
 }
 <div class="container-fluid col-lg-12 p-3 shadow-lg">
@@ -31,19 +30,19 @@
             @foreach (var candidate in Model)
             {
                 <tr>
-                    <td>@candidate.Name</td>
+                    <td>@candidate.CountryName</td>
                     <td>@candidate.Gender</td>
-                    <td>@candidate.SkillSet</td>
+                    <td>@candidate.Skills</td>
                     <td>@candidate.Phone</td>
                     <td>@candidate.Email</td>
                     <td>@candidate.Address</td>
                     <td>@candidate.CountryName</td>
 
                     <td>
-                        <a href="javascript:void(0);" id="btn-edit" data-id="@candidate.CandidateId"
-                            class="btn btn-warning btn-sm btn-edit">Edit</a>
-                        <a href="javascript:void(0);" id="btn-delete" data-id="@candidate.CandidateId"
-                            class="btn btn-danger btn-sm btn-delete">Delete</a>
+                        <a href="javascript:void(0);" id="edit-btn" data-id="@candidate.CandidateId"
+                            class="btn btn-warning btn-sm edit-btn">Edit</a>
+                        <a href="javascript:void(0);" id="delete-btn" data-id="@candidate.CandidateId"
+                            class="btn btn-danger btn-sm delete-btn">Delete</a>
                     </td>
                 </tr>
             }
@@ -72,29 +71,28 @@
         $(document).ready(function () {
 
             $('#userTable').DataTable({
-                paging: true,
-                searching: true,
-                ordering: true,
-                pageLength: 10,
-                lengthMenu: [5, 10, 25, 50, 100],
+                paging: true,        // Enable pagination
+                searching: true,     // Enable search/filter
+                ordering: true,      // Enable column sorting
+                pageLength: 10,      // Default rows per page
+                lengthMenu: [5, 10, 25, 50, 100], // Options for rows per page
                 language: {
-                    search: "Filter records:",
+                    search: "Filter records:",  // Customize search label
                     lengthMenu: "Show _MENU_ entries",
                 },
                 columnDefs: [
-                    { orderable: false, targets: 3 }
+                    { orderable: false, targets: 3 } // Disable sorting for the 'Actions' column
                 ]
             });
 
-
-            $('.btn-edit').on('click', function () {
+            // Edit button click event
+            $('.edit-btn').on('click', function () {
                 console.log("Test Edit");
 
                 var candidateId = $(this).data('id');
-                console.log(candidateId);
 
                 Swal.fire({
-                    title: 'Are you sure you want to edit this Candidate?',
+                    title: 'Are you sure you want to edit this candidate?',
                     text: 'You can modify the candidate details.',
                     icon: 'question',
                     showCancelButton: true,
@@ -104,16 +102,17 @@
                     cancelButtonText: 'No, Cancel'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        window.location.href = 'Candidate_Registration/' + candidateId;
+                        window.location.href = '/Candidate/Edit/' + candidateId; // Redirect to the Edit page
                     }
                 });
             });
 
-
-            $('.btn-delete').on('click', function () {
+            // Delete button click event
+            $('.delete-btn').on('click', function () {
                 var candidateId = $(this).data('id');
+
                 Swal.fire({
-                    title: 'Are you sure you want to delete this Candidate?',
+                    title: 'Are you sure you want to delete this candidate?',
                     text: 'This action is irreversible!',
                     icon: 'warning',
                     showCancelButton: true,
@@ -123,8 +122,8 @@
                     cancelButtonText: 'No, Cancel'
                 }).then((result) => {
                     if (result.isConfirmed) {
-
-                        window.location.href = 'Delete/' + candidateId;
+                        // Call Delete API or perform the delete action
+                        window.location.href = '/Candidate/Delete/' + candidateId; // Redirect to the Delete action
                     }
                 });
             });

@@ -93,108 +93,48 @@ const validateForm = ($parentElement) => {
 
 };
 
-
-const addForm = () => {
-
-    let $formIndexInput = $('#form-index');
-    let formIndex = parseInt($formIndexInput.attr('data-index')) || 0;
-    console.log('Current index:', formIndex);
-
-    $.ajax({
-        url: '/GetRegistrationForm',
-        type: 'GET',
-        data: { index: formIndex },
-        success: function (html) {
-            formIndex++;
-            $formIndexInput.attr('data-index', formIndex);
-            $formIndexInput.val(formIndex);
-            console.log('Next index set to:', formIndex);
-            $('#register-container').append(html);
-        },
-        error: function () {
-            alert('Failed to load form');
-        }
-    });
-}
-
-
-const addNew = () => {
-
-    var lastForm = $('.register-container > div').last();
-
-    if (lastForm != null) {
-        if (!validateForm(lastForm)) {
-            return;
-        }
-    }
-
-    addForm();
-
-}
-
-
-
-
 $(document).ready(() => {
-
-
-    addForm();
-
-    $('#btn-add').click(() => {
-        console.log('btn click');
-        addNew();
-
-    });
 
     $('#btn-save').click(() => {
 
         console.log('btn save clicked');
-        const candidates = [];
-        var isValidData = true;
 
-        $('.register-form').each(function () {
-            const $form = $(this);
-            const index = $form.data("index");
+        const $form = $('.register-form');
+        const index = 0;
 
-            if (!validateForm($form)) {
-                isValidData = false;
-                return false;
-            }
-
-            const skills = [];
-            $form.find('input[name="skills"]:checked').each(function () {
-                skills.push($(this).val());
-            });
-
-            const candidate = {
-                name: $.trim($form.find('#candidate-name').val()),
-                genderId: parseInt($form.find(`input[name="Gender_${index}"]:checked`)?.val()),
-                skills: skills,
-                skillSet: skills.join(","),
-                phone: $.trim($form.find('#phone').val()),
-                email: $.trim($form.find('#email').val()),
-                address: $.trim($form.find('textarea').val()),
-                countryId: $.trim($form.find('#country').val())
-            };
-
-            console.log(candidate);
-
-            candidates.push(candidate);
-        });
-
-        if (!isValidData) {
+        if (!validateForm($form)) {
             return;
         }
-        console.log(candidates);
+
+        const skills = [];
+        $form.find('input[name="skills"]:checked').each(function () {
+            skills.push($(this).val());
+        });
+
+        const candidate = {
+            candidateId: parseInt($('#ID').val()),
+            name: $.trim($form.find('#candidate-name').val()),
+            genderId: parseInt($form.find(`input[name="Gender_${index}"]:checked`)?.val()),
+            skills: skills,
+            skillset: skills.join(','),
+            phone: $.trim($form.find('#phone').val()),
+            email: $.trim($form.find('#email').val()),
+            address: $.trim($form.find('textarea').val()),
+            countryId: $.trim($form.find('#country').val())
+        };
+
+        console.log(candidate);
+
         console.log('save end');
 
 
         $.ajax({
             type: "POST",
-            url: "/Candidate/SaveCandidates",
+            url: "/SaveCandidate",
             contentType: 'application/json',
-            data: JSON.stringify(candidates),
+            data: JSON.stringify(candidate),
             success: (response) => {
+                console.log(response);
                 if (response.success) {
                     window.location.href = '/Index';
                 }

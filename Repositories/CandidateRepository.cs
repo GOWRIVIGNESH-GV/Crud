@@ -1,8 +1,11 @@
 using System.Data;
 using System.Reflection.Metadata;
 using System.Threading.Tasks;
+using Crud.Data;
+using Crud.Helper;
 using Crud.Models;
 using FluentResults;
+using Newtonsoft.Json;
 using Oracle.ManagedDataAccess.Client;
 using Oracle.ManagedDataAccess.Types;
 
@@ -55,13 +58,13 @@ namespace Crud.Repositories
 
                     return Result.Ok(countries);
                 }
-                catch (OracleException ex)
+                catch (OracleException err)
                 {
-                    return Result.Fail($"Oracle error: {ex.Message}");
+                    return Result.Fail(ErrorHelper.GetCustomUDE(err));
                 }
-                catch (Exception ex)
+                catch (Exception err)
                 {
-                    return Result.Fail($"Unexpected error: {ex.Message}");
+                    return Result.Fail($"Unexpected error: {err.Message}");
                 }
 
             }
@@ -91,22 +94,27 @@ namespace Crud.Repositories
 
                                 var id = reader.GetInt32(reader.GetOrdinal("ID"));
                                 var name = reader.IsDBNull(reader.GetOrdinal("NAME")) ? null : reader.GetString(reader.GetOrdinal("NAME"));
+                                var gender = reader.IsDBNull(reader.GetOrdinal("GENDER")) ? null : reader.GetString(reader.GetOrdinal("GENDER"));
                                 var genderId = reader.GetInt32(reader.GetOrdinal("GENDER_ID"));
                                 var skillSet = reader.IsDBNull(reader.GetOrdinal("SKILLSET")) ? null : reader.GetString(reader.GetOrdinal("SKILLSET"));
                                 var phone = reader.IsDBNull(reader.GetOrdinal("PHONE")) ? null : reader.GetString(reader.GetOrdinal("PHONE"));
                                 var mail = reader.IsDBNull(reader.GetOrdinal("EMAIL")) ? null : reader.GetString(reader.GetOrdinal("EMAIL"));
                                 var address = reader.IsDBNull(reader.GetOrdinal("ADDRESS")) ? null : reader.GetString(reader.GetOrdinal("ADDRESS"));
                                 var countryId = reader.GetInt32(reader.GetOrdinal("COUNTRY_ID"));
+                                var country = reader.IsDBNull(reader.GetOrdinal("COUNTRY_NAME")) ? null : reader.GetString(reader.GetOrdinal("COUNTRY_NAME"));
                                 var candidate = new CandidateModel
                                 {
                                     CandidateId = id,
                                     Name = name,
                                     GenderId = genderId,
+                                    Gender = gender,
                                     SkillSet = skillSet,
-                                    Skills = skillSet.Split(',').ToList(),
+                                    Skills = skillSet == null ? new List<string>() : skillSet.Split(',').ToList(),
                                     Phone = phone,
                                     Email = mail,
-                                    Address = address
+                                    Address = address,
+                                    CountryId = countryId,
+                                    CountryName = country
                                 };
                                 candidates.Add(candidate);
                             }
@@ -116,13 +124,13 @@ namespace Crud.Repositories
                     return Result.Ok(candidates);
                 }
             }
-            catch (OracleException ex)
+            catch (OracleException err)
             {
-                return Result.Fail($"Oracle error: {ex.Message}");
+                return Result.Fail(ErrorHelper.GetCustomUDE(err));
             }
-            catch (Exception ex)
+            catch (Exception err)
             {
-                return Result.Fail($"Unexpected error: {ex.Message}");
+                return Result.Fail($"Unexpected error: {err.Message}");
             }
         }
 
@@ -168,12 +176,11 @@ namespace Crud.Repositories
             {
                 return Result.Fail("The requested candidate does not exist or is already deleted.");
             }
-            catch (OracleException ex)
+            catch (OracleException err)
             {
-
-                return Result.Fail($"Database error: {ex.Message} ");
+                return Result.Fail(ErrorHelper.GetCustomUDE(err));
             }
-            catch (Exception ex)
+            catch (Exception err)
             {
                 return Result.Fail("An unexpected error occurred while deleting the candidate.");
             }
@@ -203,13 +210,10 @@ namespace Crud.Repositories
                         cmd.Parameters.Add("pEMAIL", OracleDbType.Varchar2).Value = candidate.Email;
                         cmd.Parameters.Add("pADDRESS", OracleDbType.Varchar2).Value = candidate.Address;
                         cmd.Parameters.Add("pCOUNTRY_ID", OracleDbType.Int32).Value = candidate.CountryId;
+                        cmd.Parameters.Add("pUPDATED_BY", OracleDbType.Int32).Value = candidate.CreatedBy;
 
 
-                        var outputParam = new OracleParameter("mResult", OracleDbType.RefCursor)
-                        {
-                            Direction = ParameterDirection.Output
-                        };
-
+                        var outputParam = new OracleParameter("mResult", OracleDbType.RefCursor, ParameterDirection.Output);
                         cmd.Parameters.Add(outputParam);
 
                         await cmd.ExecuteNonQueryAsync();
@@ -225,9 +229,134 @@ namespace Crud.Repositories
                     }
                 }
             }
+            catch (OracleException err)
+            {
+                return Result.Fail(ErrorHelper.GetCustomUDE(err));
+            }
+            catch (Exception err)
+            {
+                return Result.Fail($"Unexpected error: {err.Message}");
+            }
+        }
+
+
+        // public async Task<Result<int>> InsertBulkAsync(List<CandidateModel> candidates, int userId)
+        // {
+        //     try
+        //     {
+        //         using (var conn = new OracleConnection(_connectionString))
+        //         {
+        //             await conn.OpenAsync();
+
+
+        //             using (var cmd = new OracleCommand("SP_TB_INSERT_BLK_CANDIDATE", conn))
+        //             {
+        //                 cmd.CommandType = CommandType.StoredProcedure;
+
+        //                 var candidateUdts = candidates.Select(c => new CandidateUDT
+        //                 {
+
+        //                     Name = c.Name,
+        //                     GenderId = c.GenderId,
+        //                     SkillSet = c.SkillSet,
+        //                     Phone = c.Phone,
+        //                     Email = c.Email,
+        //                     Address = c.Address,
+        //                     CountryId = c.CountryId,
+
+        //                 }).ToArray();
+
+        //                 var candidateArray = new CandidateArray
+        //                 {
+        //                     Candidates = candidateUdts
+        //                 };
+
+        //                 var param = new OracleParameter
+        //                 {
+        //                     ParameterName = "pCANDIDATES",
+        //                     OracleDbType = OracleDbType.Array,
+        //                     UdtTypeName = "SYS.CANDIDATE_TABLE_TYPE",
+        //                     Value = candidateArray
+        //                 };
+
+        //                 cmd.Parameters.Add(param);
+        //                 cmd.Parameters.Add("pCREATED_BY", OracleDbType.Int32).Value = userId;
+        //                 var outParam = new OracleParameter("mResult", OracleDbType.RefCursor, ParameterDirection.Output);
+        //                 cmd.Parameters.Add(outParam);
+        //                 await cmd.ExecuteNonQueryAsync();
+
+        //                 using var reader = ((OracleRefCursor)outParam.Value).GetDataReader();
+        //                 if (reader.Read())
+        //                 {
+        //                     var id = reader.GetInt32(0);
+        //                     return Result.Ok(id);
+
+        //                 }
+
+        //                 return Result.Fail("An error occurred, faild to add candidates.");
+
+        //             }
+
+        //         }
+        //         ;
+
+
+        //         return Result.Ok(0);
+
+        //     }
+        //     catch (OracleException err)
+        //     {
+        //         return Result.Fail(ErrorHelper.GetCustomUDE(err));
+        //     }
+        //     catch (System.Exception err)
+        //     {
+        //         return Result.Fail($"Unexpected error: {err.Message}");
+        //     }
+        // }
+
+        public async Task<Result<int>> InsertBulkAsync(List<CandidateModel> candidates, int userId)
+        {
+            try
+            {
+                using var conn = new OracleConnection(_connectionString);
+                await conn.OpenAsync();
+
+                using var cmd = new OracleCommand("SP_TB_INSERT_BLK_CANDIDATE", conn)
+                {
+                    CommandType = CommandType.StoredProcedure
+                };
+
+                // Serialize candidates list to JSON string
+                string jsonInput = JsonConvert.SerializeObject(candidates);
+
+                cmd.Parameters.Add("pcandidate", OracleDbType.Clob).Value = jsonInput;
+                cmd.Parameters.Add("pcreated_by", OracleDbType.Int32).Value = userId;
+
+                var outParam = new OracleParameter("mresult", OracleDbType.RefCursor)
+                {
+                    Direction = ParameterDirection.Output
+                };
+                cmd.Parameters.Add(outParam);
+
+                await cmd.ExecuteNonQueryAsync();
+
+                using var reader = ((OracleRefCursor)outParam.Value).GetDataReader();
+                if (reader.Read())
+                {
+                    var id = reader.GetInt32(0);
+                    return Result.Ok(id);
+
+                }
+
+                return Result.Fail("An error occurred, faild to add candidates.");
+
+
+
+
+            }
             catch (OracleException ex)
             {
-                return Result.Fail($"Database error: {ex.Message}");
+                return Result.Fail(ErrorHelper.GetCustomUDE(ex));
             }
             catch (Exception ex)
             {
@@ -236,9 +365,7 @@ namespace Crud.Repositories
         }
 
 
-        public Task<Result<int>> InsertBulkAsync(List<CandidateModel> candidates)
-        {
-            throw new NotImplementedException();
-        }
+
+
     }
 }

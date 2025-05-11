@@ -63,15 +63,17 @@ namespace Crud.Services
             return res;
         }
 
-        public async Task<Result<int>> InsertBulkAsync(List<CandidateModel> candidates)
+        public async Task<Result<int>> InsertBulkAsync(List<CandidateModel> candidates, int userId)
         {
             if (candidates.Count == 1)
             {
                 var entity = candidates.FirstOrDefault();
+                entity.CreatedBy = userId;
+                entity.SkillSet = string.Join(",", entity.Skills);
                 return await _repository.InsertAsync(entity);
             }
 
-            var res = await _repository.InsertBulkAsync(candidates);
+            var res = await _repository.InsertBulkAsync(candidates, userId);
             return res;
         }
     }

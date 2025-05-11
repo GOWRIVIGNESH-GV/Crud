@@ -18,17 +18,17 @@ public class HomeController : Controller
         _candidateService = candidateService;
     }
 
-    public async Task<IActionResult> Index()
+    public IActionResult Index()
     {
-        var candidates = new List<CandidateModel>();
-        var res = await _candidateService.GetAllAsync();
+        // var candidates = new List<CandidateModel>();
+        // var res = await _candidateService.GetAllAsync();
 
-        if (res.IsSuccess && res.Value != null)
-        {
-            candidates = res.Value;
-        }
+        // if (res.IsSuccess && res.Value != null)
+        // {
+        //     candidates = res.Value;
+        // }
 
-        return View(candidates);
+        return View();
     }
 
 

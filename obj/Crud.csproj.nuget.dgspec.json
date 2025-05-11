@@ -47,6 +47,10 @@
               "target": "Package",
               "version": "[3.16.0, )"
             },
+            "Newtonsoft.Json": {
+              "target": "Package",
+              "version": "[13.0.3, )"
+            },
             "Oracle.ManagedDataAccess.Core": {
               "target": "Package",
               "version": "[23.8.0, )"
