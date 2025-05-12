@@ -321,12 +321,14 @@ namespace Crud.Repositories
                 using var conn = new OracleConnection(_connectionString);
                 await conn.OpenAsync();
 
+
+
                 using var cmd = new OracleCommand("SP_TB_INSERT_BLK_CANDIDATE", conn)
                 {
                     CommandType = CommandType.StoredProcedure
                 };
 
-                // Serialize candidates list to JSON string
+
                 string jsonInput = JsonConvert.SerializeObject(candidates);
 
                 cmd.Parameters.Add("pcandidate", OracleDbType.Clob).Value = jsonInput;
@@ -362,6 +364,7 @@ namespace Crud.Repositories
             {
                 return Result.Fail($"Unexpected error: {ex.Message}");
             }
+
         }
 
 

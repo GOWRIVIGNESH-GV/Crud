@@ -200,6 +200,8 @@ $(document).ready(() => {
                 }
                 else {
                     $('#error-tag').text(response.message);
+                    $('#error-tag').show();
+
                 }
             },
             error: (err) => {

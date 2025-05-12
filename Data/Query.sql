@@ -603,7 +603,6 @@ create or replace procedure sp_tb_insert_blk_candidate (
    l_address    varchar2(200);
    l_country_id number;
 begin
-    -- Loop through each JSON object manually using JSON_TABLE
    for rec in (
       select *
         from
@@ -640,7 +639,7 @@ begin
                  sysdate );
    end loop;
 
-   open mresult for select count(*) as inserted_count
+   open mresult for select count(*) as cadidates_count
                                      from t_tb_candidate
                     where created_by = pcreated_by;
 
